@@ -1,0 +1,30 @@
+[tool.poetry]
+name = "recommender"
+version = "0.1.0-dev"
+description = "Batch service example"
+authors = ["John Smith <john@....com>"]
+homepage = "https://github.com/..."
+classifiers = [
+    "Programming Language :: Python :: 3.8",
+    "Operating System :: OS Independent",
+]
+packages = [
+    { include = "recommender" },
+]
+
+[tool.poetry.dependencies]
+python = "~3.11.5"
+fastapi-code-generator = "^0.5.1"
+fastapi = "^0.115.6"
+pydantic = "^2.10.3"
+uvicorn = "^0.32.1"
+
+[tool.poetry.scripts]
+app-start = 'recommender:main'
+
+[tool.isort]
+profile = "black"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

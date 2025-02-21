@@ -1,0 +1,415 @@
+openapi: 3.0.2
+info:
+  title: Reviewly
+  version: 1.0.0
+tags:
+  - name: products
+    description: Endpoints relacionados con los productos
+  - name: reviews
+    description: Endpoints relacionados con las reseñas
+  - name: chat
+    description: Endpoints del chatbot
+paths:
+  /api/v0/products:
+    get:
+      summary: Obtener productos
+      description: Obtiene una lista de productos con filtros opcionales por categoría y límite.
+      operationId: getProducts
+      tags:
+        - products
+      parameters:
+        - name: category
+          in: query
+          description: Filtrar por categoría
+          required: false
+          schema:
+            type: string
+        - name: limit
+          in: query
+          description: Limitar el número de productos devueltos
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+      responses:
+        "200":
+          description: Lista de productos obtenida exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+        "400":
+          $ref: '#/components/responses/BadRequest'
+    post:
+      summary: Crear un producto
+      description: Crea un nuevo producto en la base de datos.
+      operationId: createProduct
+      tags:
+        - products
+      requestBody:
+        description: Datos del producto a crear
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Product'
+      responses:
+        "201":
+          description: Producto creado exitosamente
+        "400":
+          $ref: '#/components/responses/BadRequest'
+  /api/v0/products/{asin}:
+    parameters:
+      - name: asin
+        in: path
+        description: Identificador único del producto (ASIN)
+        required: true
+        schema:
+          type: string
+    get:
+      summary: Obtener un producto por ASIN
+      description: Recupera un producto específico utilizando su ASIN.
+      operationId: getProductByAsin
+      tags:
+        - products
+      responses:
+        "200":
+          description: Producto encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+        "404":
+          $ref: '#/components/responses/NotFound'
+    put:
+      summary: Actualizar un producto
+      description: Actualiza los datos de un producto existente.
+      operationId: updateProduct
+      tags:
+        - products
+      requestBody:
+        description: Datos actualizados del producto
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Product'
+      responses:
+        "200":
+          description: Producto actualizado exitosamente
+        "400":
+          $ref: '#/components/responses/BadRequest'
+    delete:
+      summary: Eliminar un producto
+      description: Elimina un producto de la base de datos.
+      operationId: deleteProduct
+      tags:
+        - products
+      responses:
+        "204":
+          description: Producto eliminado exitosamente
+        "404":
+          $ref: '#/components/responses/NotFound'
+  /api/v0/reviews:
+    get:
+      summary: Obtener reseñas
+      description: Obtiene una lista de reseñas con filtros opcionales.
+      operationId: getReviews
+      tags:
+        - reviews
+      responses:
+        "200":
+          description: Lista de reseñas obtenida exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReviewListResponse'
+    post:
+      summary: Crear una reseña
+      description: Crea una nueva reseña para un producto.
+      operationId: createReview
+      tags:
+        - reviews
+      requestBody:
+        description: Datos de la reseña a crear
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Review'
+      responses:
+        "201":
+          description: Reseña creada exitosamente
+  /api/v0/reviews/{review_id}:
+    parameters:
+      - name: review_id
+        in: path
+        description: iD de la reseña a eliminar
+        required: true
+        schema:
+          type: string
+    delete:
+      summary: Eliminar una reseña
+      description: Elimina una reseña de la base de datos.
+      operationId: deleteReview
+      tags:
+        - reviews
+      responses:
+        "204":
+          description: Reseña eliminada exitosamente
+        "404":
+          $ref: '#/components/responses/NotFound'
+  /api/v0/chat/query:
+    post:
+      summary: Hacer una consulta general al chatbot
+      description: Permite interactuar con el chatbot para consultas generales.
+      operationId: chatQuery
+      tags:
+        - chat
+      requestBody:
+        description: Consulta para el chatbot
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChatQuery'
+      responses:
+        "200":
+          description: Respuesta del chatbot
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChatResponse'
+  /api/v0/chat/product/{asin}:
+    parameters:
+      - name: asin
+        in: path
+        description: Identificador único del producto (ASIN)
+        required: true
+        schema:
+          type: string
+    post:
+      summary: Hacer una consulta específica de un producto al chatbot
+      description: Consulta sobre un producto específico utilizando su ASIN.
+      operationId: chatProductQuery
+      tags:
+        - chat
+      requestBody:
+        description: Consulta específica para el chatbot
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChatQuery'
+      responses:
+        "200":
+          description: Respuesta del chatbot
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChatResponse'
+components:
+  schemas:
+    Product:
+      type: object
+      properties:
+        product_id:
+          type: integer
+          example: 1
+        title:
+          type: string
+          example: "Wireless Mouse"
+        main_category:
+          type: string
+          example: "Electronics"
+        average_rating:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 5
+          example: 4.5
+        rating_number:
+          type: integer
+          minimum: 0
+          example: 120
+        features:
+          type: array
+          items:
+            type: string
+          example: ["Ergonomic design", "Bluetooth connectivity"]
+        description:
+          type: array
+          items:
+            type: string
+          example: ["Compact size", "10-meter range"]
+        price:
+          type: number
+          format: float
+          minimum: 0
+          example: 19.99
+        resume_review:
+          type: string
+          example: "This product is highly rated for its ergonomic design."
+        images:
+          type: array
+          items:
+            type: string
+            format: uri
+          example: ["https://example.com/image1.jpg", "https://example.com/image2.jpg"]
+        videos:
+          type: array
+          items:
+            type: object
+            properties:
+              title:
+                type: string
+                example: "Product demo"
+              url:
+                type: string
+                format: uri
+                example: "https://example.com/demo.mp4"
+        store:
+          type: string
+          example: "Amazon"
+        categories:
+          type: array
+          items:
+            type: string
+          example: ["Electronics", "Accessories", "Mice"]
+        details:
+          type: object
+          additionalProperties:
+            type: string
+          example:
+            brand: "Logitech"
+            material: "Plastic"
+        asin:
+          type: string
+          example: "B0897XYZ"
+        parent_asin:
+          type: string
+          nullable: true
+          example: "B0897ABC"
+        bought_together:
+          type: array
+          items:
+            type: string
+          example: ["B1234XYZ", "B5678ABC"]
+        amazon_link:
+          type: string
+          format: uri
+          example: "https://amazon.com/dp/B0897XYZ"
+        created_at:
+          type: string
+          format: date-time
+          example: "2024-12-01T12:00:00Z"
+   
+   
+    Review:
+      type: object
+      properties:
+        review_id:
+          type: integer
+          example: 1
+        amazon_user_id:
+          type: string
+          example: "A1234567890"
+        product_id:
+          type: integer
+          example: 1
+        title:
+          type: string
+          example: "Great mouse for everyday use"
+        text:
+          type: string
+          example: "I have been using this mouse for a month and it works perfectly!"
+        rating:
+          type: number
+          format: float
+          minimum: 1.0
+          maximum: 5.0
+          example: 4.8
+        images:
+          type: array
+          items:
+            type: string
+            format: uri
+          example: ["https://example.com/user-image1.jpg", "https://example.com/user-image2.jpg"]
+        sentiment:
+          type: string
+          enum: [positive, negative, neutral]
+          example: "positive"
+        helpful_vote:
+          type: integer
+          minimum: 0
+          example: 10
+        verified_purchase:
+          type: boolean
+          example: true
+        timestamp:
+          type: string
+          format: date-time
+          example: "2024-12-01T12:30:00Z"
+        created_at:
+          type: string
+          format: date-time
+          example: "2024-12-01T12:00:00Z"
+
+    ReviewListResponse:
+      type: object
+      properties:
+        reviews:
+          type: array
+          items:
+            $ref: '#/components/schemas/Review'
+          description: Lista de reseñas.
+        total:
+          type: integer
+          description: Número total de reseñas disponibles que coinciden con los filtros.
+          example: 50
+        limit:
+          type: integer
+          description: Número máximo de reseñas devueltas en esta solicitud.
+          example: 10
+          
+    ProductListResponse:
+      type: object
+      properties:
+        products:
+          type: array
+          items:
+            $ref: '#/components/schemas/Product'
+          description: Lista de productos.
+        total:
+          type: integer
+          description: Número total de productos disponibles que coinciden con los filtros.
+          example: 120
+        limit:
+          type: integer
+          description: Número máximo de productos devueltos en esta solicitud.
+          example: 10
+        category_filter:
+          type: string
+          description: Categoría por la que se filtraron los productos (si se usó).
+          example: "Electronics"
+    
+    
+    ChatQuery:
+      type: object
+      properties:
+        question:
+          type: string
+      required:
+        - question
+    ChatResponse:
+      type: object
+      properties:
+        answer:
+          type: string
+          
+          
+  responses:
+    BadRequest:
+      description: La solicitud no es válida
+    NotFound:
+      description: El recurso no se encuentra
